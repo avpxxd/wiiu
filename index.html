@@ -35,12 +35,12 @@
 
         #horizon-line {
             width: 200%;
-            height: 2px;
+            height: 4px;
             background: #00ff00;
             position: absolute;
             top: 50%;
             left: -50%;
-            box-shadow: 0 0 10px #00ff00;
+            box-shadow: 0 0 15px #00ff00;
         }
 
         #action-circle {
@@ -51,14 +51,12 @@
             margin: 15px auto;
             line-height: 80px;
             font-size: 30px;
-            transition: all 0.05s;
         }
 
         .pressed {
             background-color: #00ff00;
             color: #000;
             border-color: #fff !important;
-            transform: scale(1.1);
         }
 
         .data-grid {
@@ -79,7 +77,7 @@
             background: #ff4400;
             color: white;
             border: none;
-            padding: 12px 25px;
+            padding: 15px 30px;
             font-size: 18px;
             border-radius: 10px;
             margin-top: 15px;
@@ -108,20 +106,20 @@
 
     <div class="data-grid">
         <div class="data-row">
-            <div class="data-cell">Roll (Gyro)</div>
-            <div class="data-cell" id="val-roll">0.00</div>
+            <div class="data-cell">Y-Axis (dirZy)</div>
+            <div class="data-cell" id="val-y">0.00</div>
         </div>
         <div class="data-row">
-            <div class="data-cell">X (Accel)</div>
-            <div class="data-cell" id="val-acc">0.00</div>
+            <div class="data-cell">X-Axis (dirZx)</div>
+            <div class="data-cell" id="val-x">0.00</div>
         </div>
     </div>
 
-    <button id="rumble-btn" onclick="triggerRumble()">FORCE RUMBLE</button>
+    <button id="rumble-btn" onclick="triggerRumble()">FORCE VIBRATION</button>
     
     <div id="debug-panel">
-        <div>Prop Scan: <span id="prop-scan">...</span></div>
-        <div>Ver: <span id="hw-ver">?</span></div>
+        <div>Active Sensor: <span id="prop-scan">Scanning...</span></div>
+        <div>Raw Z-Data: <span id="raw-z">0</span></div>
     </div>
 
     <script type="text/javascript">
@@ -134,10 +132,14 @@
         function triggerRumble() {
             if (window.wiiu && window.wiiu.gamepad) {
                 var g = window.wiiu.gamepad;
-                // We try every known rumble signature back-to-back
+                // Method A: Standard Play (Hex)
                 try { g.playVibration(0x0001, 500); } catch(e) {}
-                try { g.playVibration(1, 500); } catch(e) {}
-                try { g.setVibration(1); setTimeout(function(){ g.setVibration(0); }, 500); } catch(e) {}
+                // Method B: Pulse State
+                try {
+                    g.setVibration(1); 
+                    setTimeout(function() { g.setVibration(0); }, 500);
+                } catch(e) {}
+                // Method C: Alternate API
                 try { if(window.wiiu.vibration) window.wiiu.vibration.play(500); } catch(e) {}
             }
         }
@@ -147,21 +149,25 @@
                 var state = window.wiiu.gamepad.update();
 
                 if (state && state.isEnabled) {
-                    connText.innerHTML = "ACTIVE";
+                    connText.innerHTML = "ACTIVE (v" + (state.version || "??") + ")";
                     connText.style.color = "#00ff00";
 
-                    // --- SENSOR PROBE ---
-                    // Some firmwares use 'roll' instead of 'gyroRoll', or 'accX'
-                    var roll = state.gyroRoll || state.roll || state.dirRoll || 0;
-                    var accX = state.accX || state.accelerationX || 0;
+                    // --- SENSOR MAPPING (dirZ focus) ---
+                    // Based on your prop scan, we use dirZx and dirZy
+                    var zX = state.dirZx || 0;
+                    var zY = state.dirZy || 0;
+                    var zZ = state.dirZz || 0;
 
-                    // Update UI
-                    document.getElementById('val-roll').innerHTML = roll.toFixed(4);
-                    document.getElementById('val-acc').innerHTML = accX.toFixed(4);
+                    // Update UI Numbers
+                    document.getElementById('val-x').innerHTML = zX.toFixed(4);
+                    document.getElementById('val-y').innerHTML = zY.toFixed(4);
+                    document.getElementById('raw-z').innerHTML = zZ.toFixed(4);
 
-                    // Visual tilt logic
-                    var rollDegrees = roll * (180 / Math.PI);
-                    horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
+                    // Horizon visual update
+                    // We map the Y component to the visual tilt
+                    var tilt = zY * 45; // Scaling factor for visual effect
+                    horizon.style.webkitTransform = "rotate(" + (-tilt) + "deg)";
+                    horizon.style.transform = "rotate(" + (-tilt) + "deg)";
 
                     // --- BUTTONS ---
                     if (state.hold & BUTTON_A) {
@@ -170,21 +176,18 @@
                         aCircle.className = "";
                     }
 
-                    // --- DEBUG PROBE ---
-                    // Let's see if we can find ANY property that is a number and not 0
-                    if (!window.foundProp) {
+                    // --- DYNAMIC PROP SCAN ---
+                    if (!window.scanDone) {
                         for (var p in state) {
-                            if (typeof state[p] === "number" && state[p] !== 0 && p !== "version" && p !== "hold") {
-                                document.getElementById('prop-scan').innerHTML = p + ":" + state[p].toFixed(2);
-                                window.foundProp = true;
+                            if (typeof state[p] === "number" && Math.abs(state[p]) > 0.01 && p !== "hold") {
+                                document.getElementById('prop-scan').innerHTML = p;
+                                window.scanDone = true;
                             }
                         }
                     }
-                    document.getElementById('hw-ver').innerHTML = state.version;
 
                 } else {
                     connText.innerHTML = "IDLE";
-                    connText.style.color = "orange";
                 }
             }
             window.webkitRequestAnimationFrame(updateLoop);
