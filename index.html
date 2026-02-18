@@ -124,48 +124,52 @@
         var BUTTON_A = 0x00008000;
 
         function triggerRumble() {
-            // Re-check the object immediately on click
-            var g = window.wiiu ? window.wiiu.gamepad : null;
-            if (g) {
+            if (window.wiiu && window.wiiu.gamepad) {
                 try {
-                    // Try the most common rumble command
-                    g.playVibration(1, 500);
+                    // Method 1: Integer mask (Standard)
+                    window.wiiu.gamepad.playVibration(1, 500);
                 } catch(e) {
                     try {
-                        // Fallback pattern if the first fails
-                        g.playVibration(0x0001, 500);
+                        // Method 2: Hex mask (Older firmware)
+                        window.wiiu.gamepad.playVibration(0x0001, 500);
                     } catch(e2) {
-                        console.log("Rumble failed");
+                        // Method 3: Direct pattern array (Experimental)
+                        if(window.wiiu.gamepad.setVibration) {
+                           window.wiiu.gamepad.setVibration([1], 500);
+                        }
                     }
                 }
             }
         }
 
         function mainLoop() {
-            // Wii U GamePad API is accessed via window.wiiu.gamepad
             if (window.wiiu && window.wiiu.gamepad) {
                 var g = window.wiiu.gamepad;
                 
-                // You MUST call update() to populate the current state object
+                // Update the state
                 var state = g.update();
 
                 if (state && state.isEnabled) {
                     connText.innerHTML = "CONNECTED & ACTIVE";
                     connText.style.color = "#00ff00";
 
-                    // 1. GYRO LOGIC (Roll)
-                    // Note: Ensure the GamePad isn't laying flat during initialization
+                    // 1. IMPROVED GYRO LOGIC
+                    // We pull from gyroRoll directly. Note: on some browsers this is 'roll' 
+                    // but on Wii U NetFront it is specifically 'gyroRoll'.
                     var roll = state.gyroRoll || 0;
                     var pitch = state.gyroPitch || 0;
                     
+                    // The Wii U gives values in radians. Converting to degrees for the CSS.
                     var rollDegrees = roll * (180 / Math.PI);
-                    horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
                     
-                    document.getElementById('val-roll').innerHTML = roll.toFixed(3);
-                    document.getElementById('val-pitch').innerHTML = pitch.toFixed(3);
+                    // Applying transformation with fallbacks for older WebKit
+                    horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
+                    horizon.style.transform = "rotate(" + (-rollDegrees) + "deg)";
+                    
+                    document.getElementById('val-roll').innerHTML = roll.toFixed(4);
+                    document.getElementById('val-pitch').innerHTML = pitch.toFixed(4);
 
                     // 2. A BUTTON LOGIC
-                    // Logic check: bitwise AND against the hold bitmask
                     if (state.hold & BUTTON_A) {
                         aCircle.className = "pressed";
                     } else {
@@ -173,7 +177,7 @@
                     }
 
                 } else {
-                    connText.innerHTML = "GAMEPAD NOT READY (CHECK GAMEPAD)";
+                    connText.innerHTML = "GAMEPAD NOT READY (CHECK BUTTONS)";
                     connText.style.color = "orange";
                 }
             } else {
@@ -181,9 +185,10 @@
                 connText.style.color = "red";
             }
 
-            // Sync with browser refresh
             if (window.webkitRequestAnimationFrame) {
                 window.webkitRequestAnimationFrame(mainLoop);
+            } else if (window.requestAnimationFrame) {
+                window.requestAnimationFrame(mainLoop);
             } else {
                 setTimeout(mainLoop, 16);
             }
