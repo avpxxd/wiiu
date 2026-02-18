@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wii U Lab // A-G-R</title>
+    <title>Wii U Lab // A-G</title>
     <style>
         body {
             background-color: #111;
@@ -25,7 +25,7 @@
 
         #horizon-container {
             width: 100%;
-            height: 120px;
+            height: 150px;
             background: #000;
             border: 2px solid #444;
             position: relative;
@@ -44,52 +44,43 @@
         }
 
         #action-circle {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 5px solid #333;
-            margin: 15px auto;
-            line-height: 80px;
-            font-size: 30px;
+            margin: 25px auto;
+            line-height: 100px;
+            font-size: 40px;
         }
 
         .pressed {
             background-color: #00ff00;
             color: #000;
             border-color: #fff !important;
+            transform: scale(1.1);
         }
 
         .data-grid {
             display: table;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 20px;
         }
 
         .data-row { display: table-row; }
         .data-cell {
             display: table-cell;
-            padding: 5px;
+            padding: 10px;
             border-bottom: 1px solid #333;
-            font-size: 13px;
-        }
-
-        #rumble-btn {
-            background: #ff4400;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            border-radius: 10px;
-            margin-top: 15px;
+            font-size: 16px;
         }
         
         #debug-panel {
-            font-size: 10px;
+            font-size: 12px;
             color: #666;
-            margin-top: 15px;
+            margin-top: 25px;
             text-align: left;
             background: #050505;
-            padding: 5px;
+            padding: 10px;
             border: 1px solid #222;
         }
     </style>
@@ -101,21 +92,20 @@
     <div id="horizon-container">
         <div id="horizon-line"></div>
     </div>
+    <p style="color: #888; font-size: 14px; margin-top: 10px;">Roll the GamePad to tilt the green line</p>
 
     <div id="action-circle">A</div>
 
     <div class="data-grid">
         <div class="data-row">
-            <div class="data-cell">Y-Axis (dirZy)</div>
-            <div class="data-cell" id="val-y">0.00</div>
-        </div>
-        <div class="data-row">
-            <div class="data-cell">X-Axis (dirZx)</div>
+            <div class="data-cell">Roll (dirZx)</div>
             <div class="data-cell" id="val-x">0.00</div>
         </div>
+        <div class="data-row">
+            <div class="data-cell">Pitch (dirZy)</div>
+            <div class="data-cell" id="val-y">0.00</div>
+        </div>
     </div>
-
-    <button id="rumble-btn" onclick="triggerRumble()">FORCE VIBRATION</button>
     
     <div id="debug-panel">
         <div>Active Sensor: <span id="prop-scan">Scanning...</span></div>
@@ -129,31 +119,16 @@
         
         var BUTTON_A = 0x00008000;
 
-        function triggerRumble() {
-            if (window.wiiu && window.wiiu.gamepad) {
-                var g = window.wiiu.gamepad;
-                // Method A: Standard Play (Hex)
-                try { g.playVibration(0x0001, 500); } catch(e) {}
-                // Method B: Pulse State
-                try {
-                    g.setVibration(1); 
-                    setTimeout(function() { g.setVibration(0); }, 500);
-                } catch(e) {}
-                // Method C: Alternate API
-                try { if(window.wiiu.vibration) window.wiiu.vibration.play(500); } catch(e) {}
-            }
-        }
-
         function updateLoop() {
             if (window.wiiu && window.wiiu.gamepad) {
                 var state = window.wiiu.gamepad.update();
 
                 if (state && state.isEnabled) {
-                    connText.innerHTML = "ACTIVE (v" + (state.version || "??") + ")";
+                    connText.innerHTML = "ACTIVE";
                     connText.style.color = "#00ff00";
 
-                    // --- SENSOR MAPPING (dirZ focus) ---
-                    // Based on your prop scan, we use dirZx and dirZy
+                    // --- SENSOR MAPPING ---
+                    // Mapping Horizon to X-Axis (dirZx) as requested
                     var zX = state.dirZx || 0;
                     var zY = state.dirZy || 0;
                     var zZ = state.dirZz || 0;
@@ -163,11 +138,11 @@
                     document.getElementById('val-y').innerHTML = zY.toFixed(4);
                     document.getElementById('raw-z').innerHTML = zZ.toFixed(4);
 
-                    // Horizon visual update
-                    // We map the Y component to the visual tilt
-                    var tilt = zY * 45; // Scaling factor for visual effect
-                    horizon.style.webkitTransform = "rotate(" + (-tilt) + "deg)";
-                    horizon.style.transform = "rotate(" + (-tilt) + "deg)";
+                    // Horizon visual update mapped to X-axis
+                    // A multiplier (e.g., 45 or 90) helps make the movement visible
+                    var tilt = zX * 45; 
+                    horizon.style.webkitTransform = "rotate(" + tilt + "deg)";
+                    horizon.style.transform = "rotate(" + tilt + "deg)";
 
                     // --- BUTTONS ---
                     if (state.hold & BUTTON_A) {
@@ -187,7 +162,8 @@
                     }
 
                 } else {
-                    connText.innerHTML = "IDLE";
+                    connText.innerHTML = "IDLE / DISCONNECTED";
+                    connText.style.color = "orange";
                 }
             }
             window.webkitRequestAnimationFrame(updateLoop);
