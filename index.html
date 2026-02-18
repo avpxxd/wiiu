@@ -2,93 +2,172 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>AVPxxd's Wii U Dev Tools</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AVPxxd's Wii U Lab</title>
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: "Courier New", monospace;
+            background-color: #111;
+            color: #eee;
+            font-family: sans-serif;
             margin: 0;
             padding: 20px;
             overflow: hidden;
+            text-align: center;
         }
-        .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .grid { display: block; }
-        .row { margin: 10px 0; font-size: 20px; }
-        .label { color: #888; }
-        .val { color: #fff; font-weight: bold; }
-        #log {
-            margin-top: 20px;
+
+        #status-bar {
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        /* The Gyro Visualizer */
+        #horizon-container {
+            width: 100%;
             height: 150px;
-            border-top: 1px solid #333;
+            background: #000;
+            border: 2px solid #444;
+            position: relative;
             overflow: hidden;
-            font-size: 14px;
-            color: #aaa;
+            border-radius: 15px;
         }
-        .btn-active { color: #00ff00; background: #111; }
+
+        #horizon-line {
+            width: 200%;
+            height: 2px;
+            background: #00ff00;
+            position: absolute;
+            top: 50%;
+            left: -50%;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        /* The A-Button Indicator */
+        #action-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 5px solid #333;
+            margin: 20px auto;
+            line-height: 100px;
+            font-size: 40px;
+            transition: all 0.05s;
+        }
+
+        .pressed {
+            background-color: #00ff00;
+            color: #000;
+            border-color: #fff !important;
+            transform: scale(1.1);
+        }
+
+        .data-grid {
+            display: table;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .data-row {
+            display: table-row;
+        }
+
+        .data-cell {
+            display: table-cell;
+            padding: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        #rumble-btn {
+            background: #ff4400;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 style="margin:0;">Wii U LIVE DATA</h1>
-        <div id="status" style="color: yellow;">INITIALIZING...</div>
+    <div id="status-bar">WII U BROWSER LINK: <span id="conn">WAITING</span></div>
+
+    <div id="horizon-container">
+        <div id="horizon-line"></div>
+    </div>
+    <p style="color: #888; font-size: 12px;">GYRO: TILT GAMEPAD LEFT/RIGHT</p>
+
+    <div id="action-circle">A</div>
+    <p>HOLD A TO ACTIVATE</p>
+
+    <div class="data-grid">
+        <div class="data-row">
+            <div class="data-cell">Roll</div>
+            <div class="data-cell" id="val-roll">0.00</div>
+        </div>
+        <div class="data-row">
+            <div class="data-cell">Pitch</div>
+            <div class="data-cell" id="val-pitch">0.00</div>
+        </div>
     </div>
 
-    <div class="grid">
-        <div class="row"><span class="label">BUTTONS: </span><span id="btn-hex" class="val">0x00000000</span></div>
-        <div class="row"><span class="label">L-STICK: </span><span id="l-stick" class="val">0, 0</span></div>
-        <div class="row"><span class="label">R-STICK: </span><span id="r-stick" class="val">0, 0</span></div>
-        <div class="row"><span class="label">GYRO PITCH:</span><span id="gyro" class="val">0.00</span></div>
-    </div>
-
-    <div id="log">--- INPUT LOG START ---<br></div>
+    <button id="rumble-btn" onclick="triggerRumble()">TEST RUMBLE</button>
 
     <script type="text/javascript">
-        var lastBtn = 0;
-        var logEl = document.getElementById('log');
+        var horizon = document.getElementById('horizon-line');
+        var aCircle = document.getElementById('action-circle');
+        var connText = document.getElementById('conn');
+        
+        // Bitmask for the A button
+        var BUTTON_A = 0x00008000;
 
-        function addToLog(msg) {
-            var entry = document.createElement('div');
-            entry.innerHTML = "> " + msg;
-            logEl.insertBefore(entry, logEl.firstChild);
-            // Keep log short to save Wii U memory
-            if (logEl.childNodes.length > 8) { logEl.removeChild(logEl.lastChild); }
+        function triggerRumble() {
+            if (window.wiiu && window.wiiu.gamepad) {
+                // Play rumble for 500ms
+                window.wiiu.gamepad.playVibration(1, 500);
+            }
         }
 
-        function update() {
+        function mainLoop() {
             if (window.wiiu && window.wiiu.gamepad) {
                 var state = window.wiiu.gamepad.update();
 
                 if (state.isEnabled) {
-                    document.getElementById('status').innerHTML = "CONNECTED @ 60FPS";
-                    document.getElementById('status').style.color = "#0f0";
+                    connText.innerHTML = "CONNECTED";
+                    connText.style.color = "#00ff00";
 
-                    // Update live values
-                    document.getElementById('btn-hex').innerHTML = "0x" + state.hold.toString(16).toUpperCase();
-                    document.getElementById('l-stick').innerHTML = state.lStickX.toFixed(2) + ", " + state.lStickY.toFixed(2);
-                    document.getElementById('r-stick').innerHTML = state.rStickX.toFixed(2) + ", " + state.rStickY.toFixed(2);
-                    document.getElementById('gyro').innerHTML = state.gyroPitch.toFixed(4);
+                    // 1. GYRO LOGIC (Roll)
+                    // We rotate the horizon line based on the gamepad's roll
+                    var rollDegrees = state.gyroRoll * (180 / Math.PI);
+                    horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
+                    
+                    document.getElementById('val-roll').innerHTML = state.gyroRoll.toFixed(3);
+                    document.getElementById('val-pitch').innerHTML = state.gyroPitch.toFixed(3);
 
-                    // If a new button is pressed, log it
-                    if (state.hold !== lastBtn && state.hold !== 0) {
-                        addToLog("Button State Changed: 0x" + state.hold.toString(16));
+                    // 2. A BUTTON LOGIC
+                    if (state.hold & BUTTON_A) {
+                        aCircle.className = "pressed";
+                        // Continuous rumble while holding A? (Optional)
+                        // window.wiiu.gamepad.playVibration(1, 100); 
+                    } else {
+                        aCircle.className = "";
                     }
-                    lastBtn = state.hold;
+
                 } else {
-                    document.getElementById('status').innerHTML = "WAITING FOR GAMEPAD...";
-                    document.getElementById('status').style.color = "red";
+                    connText.innerHTML = "GAMEPAD DISCONNECTED";
+                    connText.style.color = "red";
                 }
             } else {
-                document.getElementById('status').innerHTML = "ERROR: NOT A WII U BROWSER";
+                connText.innerHTML = "UNSUPPORTED BROWSER";
             }
 
-            // This is the "Refresh Constantly" part
-            window.webkitRequestAnimationFrame(update);
+            window.webkitRequestAnimationFrame(mainLoop);
         }
 
-        // Kick off the loop
-        update();
+        // Start tracking
+        mainLoop();
     </script>
 </body>
 </html>
