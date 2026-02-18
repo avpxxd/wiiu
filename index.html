@@ -1,88 +1,94 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>AVPxxd's Wii U Dev Tools</title>
     <style>
         body {
             background-color: #000;
-            color: #0f0;
-            font-family: monospace;
-            margin: 20px;
-            overflow: hidden; /* Prevent scrolling */
+            color: #00ff00;
+            font-family: "Courier New", monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
         }
-        h1 { color: #fff; border-bottom: 2px solid #333; }
-        .data-field { margin-bottom: 10px; font-size: 18px; }
-        .active { color: #fff; font-weight: bold; background: #222; }
-        #status { color: red; }
-        #status.online { color: #0f0; }
+        .header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .grid { display: block; }
+        .row { margin: 10px 0; font-size: 20px; }
+        .label { color: #888; }
+        .val { color: #fff; font-weight: bold; }
+        #log {
+            margin-top: 20px;
+            height: 150px;
+            border-top: 1px solid #333;
+            overflow: hidden;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .btn-active { color: #00ff00; background: #111; }
     </style>
 </head>
 <body>
 
-    <h1>Wii U GamePad Data</h1>
-    <div id="status">Searching for GamePad...</div>
-    
-    <div class="data-field">Buttons: <span id="btn-hex">0x00000000</span></div>
-    <div class="data-field">Left Stick: <span id="l-stick">0.00, 0.00</span></div>
-    <div class="data-field">Right Stick: <span id="r-stick">0.00, 0.00</span></div>
-    <div class="data-field">Touch: <span id="touch-pos">No Touch</span></div>
-    <hr>
-    <div class="data-field">Acc (X,Y,Z): <span id="accel">0, 0, 0</span></div>
-    <div class="data-field">Gyro (Roll,Pitch,Yaw): <span id="gyro">0, 0, 0</span></div>
+    <div class="header">
+        <h1 style="margin:0;">Wii U LIVE DATA</h1>
+        <div id="status" style="color: yellow;">INITIALIZING...</div>
+    </div>
+
+    <div class="grid">
+        <div class="row"><span class="label">BUTTONS: </span><span id="btn-hex" class="val">0x00000000</span></div>
+        <div class="row"><span class="label">L-STICK: </span><span id="l-stick" class="val">0, 0</span></div>
+        <div class="row"><span class="label">R-STICK: </span><span id="r-stick" class="val">0, 0</span></div>
+        <div class="row"><span class="label">GYRO PITCH:</span><span id="gyro" class="val">0.00</span></div>
+    </div>
+
+    <div id="log">--- INPUT LOG START ---<br></div>
 
     <script type="text/javascript">
-        // Standard ES5 Variables
-        var statusEl = document.getElementById('status');
-        var btnEl = document.getElementById('btn-hex');
-        var lStickEl = document.getElementById('l-stick');
-        var rStickEl = document.getElementById('r-stick');
-        var touchEl = document.getElementById('touch-pos');
-        var accEl = document.getElementById('accel');
-        var gyroEl = document.getElementById('gyro');
+        var lastBtn = 0;
+        var logEl = document.getElementById('log');
 
-        function updateLoop() {
-            // Check if the API exists
+        function addToLog(msg) {
+            var entry = document.createElement('div');
+            entry.innerHTML = "> " + msg;
+            logEl.insertBefore(entry, logEl.firstChild);
+            // Keep log short to save Wii U memory
+            if (logEl.childNodes.length > 8) { logEl.removeChild(logEl.lastChild); }
+        }
+
+        function update() {
             if (window.wiiu && window.wiiu.gamepad) {
                 var state = window.wiiu.gamepad.update();
 
                 if (state.isEnabled) {
-                    statusEl.innerHTML = "GAMEPAD CONNECTED";
-                    statusEl.className = "online";
+                    document.getElementById('status').innerHTML = "CONNECTED @ 60FPS";
+                    document.getElementById('status').style.color = "#0f0";
 
-                    // 1. Buttons (Hexadecimal representation)
-                    btnEl.innerHTML = "0x" + state.hold.toString(16).toUpperCase();
+                    // Update live values
+                    document.getElementById('btn-hex').innerHTML = "0x" + state.hold.toString(16).toUpperCase();
+                    document.getElementById('l-stick').innerHTML = state.lStickX.toFixed(2) + ", " + state.lStickY.toFixed(2);
+                    document.getElementById('r-stick').innerHTML = state.rStickX.toFixed(2) + ", " + state.rStickY.toFixed(2);
+                    document.getElementById('gyro').innerHTML = state.gyroPitch.toFixed(4);
 
-                    // 2. Sticks (Rounded for readability)
-                    lStickEl.innerHTML = state.lStickX.toFixed(2) + ", " + state.lStickY.toFixed(2);
-                    rStickEl.innerHTML = state.rStickX.toFixed(2) + ", " + state.rStickY.toFixed(2);
-
-                    // 3. Touch Screen
-                    if (state.isTouched) {
-                        touchEl.innerHTML = "X: " + state.tpX + " Y: " + state.tpY;
-                        touchEl.className = "data-field active";
-                    } else {
-                        touchEl.innerHTML = "No Touch";
-                        touchEl.className = "data-field";
+                    // If a new button is pressed, log it
+                    if (state.hold !== lastBtn && state.hold !== 0) {
+                        addToLog("Button State Changed: 0x" + state.hold.toString(16));
                     }
-
-                    // 4. Motion Sensors
-                    accEl.innerHTML = state.accX.toFixed(3) + ", " + state.accY.toFixed(3) + ", " + state.accZ.toFixed(3);
-                    gyroEl.innerHTML = state.gyroRoll.toFixed(3) + ", " + state.gyroPitch.toFixed(3) + ", " + state.gyroYaw.toFixed(3);
-
+                    lastBtn = state.hold;
                 } else {
-                    statusEl.innerHTML = "GAMEPAD DISCONNECTED";
-                    statusEl.className = "";
+                    document.getElementById('status').innerHTML = "WAITING FOR GAMEPAD...";
+                    document.getElementById('status').style.color = "red";
                 }
             } else {
-                statusEl.innerHTML = "NOT A WII U BROWSER";
+                document.getElementById('status').innerHTML = "ERROR: NOT A WII U BROWSER";
             }
 
-            // Standard requestAnimationFrame (supported in Wii U WebKit)
-            window.webkitRequestAnimationFrame(updateLoop);
+            // This is the "Refresh Constantly" part
+            window.webkitRequestAnimationFrame(update);
         }
 
-        // Start the loop
-        updateLoop();
+        // Kick off the loop
+        update();
     </script>
 </body>
 </html>
