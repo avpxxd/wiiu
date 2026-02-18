@@ -23,10 +23,9 @@
             font-weight: bold;
         }
 
-        /* The Gyro Visualizer */
         #horizon-container {
             width: 100%;
-            height: 150px;
+            height: 120px;
             background: #000;
             border: 2px solid #444;
             position: relative;
@@ -44,15 +43,14 @@
             box-shadow: 0 0 10px #00ff00;
         }
 
-        /* The A-Button Indicator */
         #action-circle {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: 5px solid #333;
-            margin: 20px auto;
-            line-height: 100px;
-            font-size: 40px;
+            margin: 15px auto;
+            line-height: 80px;
+            font-size: 30px;
             transition: all 0.05s;
         }
 
@@ -66,118 +64,132 @@
         .data-grid {
             display: table;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
-        .data-row {
-            display: table-row;
-        }
-
+        .data-row { display: table-row; }
         .data-cell {
             display: table-cell;
-            padding: 10px;
+            padding: 5px;
             border-bottom: 1px solid #333;
+            font-size: 13px;
         }
 
         #rumble-btn {
             background: #ff4400;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 20px;
+            padding: 12px 25px;
+            font-size: 18px;
             border-radius: 10px;
-            margin-top: 20px;
+            margin-top: 15px;
+        }
+        
+        #debug-panel {
+            font-size: 10px;
+            color: #666;
+            margin-top: 15px;
+            text-align: left;
+            background: #050505;
+            padding: 5px;
+            border: 1px solid #222;
         }
     </style>
 </head>
 <body>
 
-    <div id="status-bar">WII U BROWSER LINK: <span id="conn">WAITING</span></div>
+    <div id="status-bar">LINK: <span id="conn">WAITING</span></div>
 
     <div id="horizon-container">
         <div id="horizon-line"></div>
     </div>
-    <p style="color: #888; font-size: 12px;">GYRO: TILT GAMEPAD LEFT/RIGHT</p>
 
     <div id="action-circle">A</div>
-    <p>HOLD A TO ACTIVATE</p>
 
     <div class="data-grid">
         <div class="data-row">
-            <div class="data-cell">Roll</div>
+            <div class="data-cell">Roll (Gyro)</div>
             <div class="data-cell" id="val-roll">0.00</div>
         </div>
         <div class="data-row">
-            <div class="data-cell">Pitch</div>
-            <div class="data-cell" id="val-pitch">0.00</div>
+            <div class="data-cell">X (Accel)</div>
+            <div class="data-cell" id="val-acc">0.00</div>
         </div>
     </div>
 
-    <button id="rumble-btn" onclick="triggerRumble()">TEST RUMBLE</button>
+    <button id="rumble-btn" onclick="triggerRumble()">FORCE RUMBLE</button>
+    
+    <div id="debug-panel">
+        <div>Prop Scan: <span id="prop-scan">...</span></div>
+        <div>Ver: <span id="hw-ver">?</span></div>
+    </div>
 
     <script type="text/javascript">
         var horizon = document.getElementById('horizon-line');
         var aCircle = document.getElementById('action-circle');
         var connText = document.getElementById('conn');
         
-        // Bitmask for the A button
         var BUTTON_A = 0x00008000;
 
         function triggerRumble() {
             if (window.wiiu && window.wiiu.gamepad) {
-                // Using 0x0001 bitmask as it is the most reliable "on" signal
-                // Some firmwares require the exact hex value vs integer 1
-                try {
-                    window.wiiu.gamepad.playVibration(0x0001, 500);
-                } catch(e) {
-                    // Fallback to integer if hex fails
-                    window.wiiu.gamepad.playVibration(1, 500);
-                }
+                var g = window.wiiu.gamepad;
+                // We try every known rumble signature back-to-back
+                try { g.playVibration(0x0001, 500); } catch(e) {}
+                try { g.playVibration(1, 500); } catch(e) {}
+                try { g.setVibration(1); setTimeout(function(){ g.setVibration(0); }, 500); } catch(e) {}
+                try { if(window.wiiu.vibration) window.wiiu.vibration.play(500); } catch(e) {}
             }
         }
 
         function updateLoop() {
             if (window.wiiu && window.wiiu.gamepad) {
-                // Re-poll the state every frame
                 var state = window.wiiu.gamepad.update();
 
-                if (state.isEnabled) {
-                    connText.innerHTML = "CONNECTED & ACTIVE";
+                if (state && state.isEnabled) {
+                    connText.innerHTML = "ACTIVE";
                     connText.style.color = "#00ff00";
 
-                    // 1. GYRO DATA
-                    // Reverting to the direct access pattern from your working build
-                    var r = state.gyroRoll;
-                    var p = state.gyroPitch;
-                    
-                    document.getElementById('val-roll').innerHTML = r.toFixed(4);
-                    document.getElementById('val-pitch').innerHTML = p.toFixed(4);
+                    // --- SENSOR PROBE ---
+                    // Some firmwares use 'roll' instead of 'gyroRoll', or 'accX'
+                    var roll = state.gyroRoll || state.roll || state.dirRoll || 0;
+                    var accX = state.accX || state.accelerationX || 0;
 
-                    // Horizon visual update (converting Radians to Degrees)
-                    var rollDegrees = r * (180 / Math.PI);
+                    // Update UI
+                    document.getElementById('val-roll').innerHTML = roll.toFixed(4);
+                    document.getElementById('val-acc').innerHTML = accX.toFixed(4);
+
+                    // Visual tilt logic
+                    var rollDegrees = roll * (180 / Math.PI);
                     horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
 
-                    // 2. A BUTTON LOGIC
+                    // --- BUTTONS ---
                     if (state.hold & BUTTON_A) {
                         aCircle.className = "pressed";
                     } else {
                         aCircle.className = "";
                     }
 
+                    // --- DEBUG PROBE ---
+                    // Let's see if we can find ANY property that is a number and not 0
+                    if (!window.foundProp) {
+                        for (var p in state) {
+                            if (typeof state[p] === "number" && state[p] !== 0 && p !== "version" && p !== "hold") {
+                                document.getElementById('prop-scan').innerHTML = p + ":" + state[p].toFixed(2);
+                                window.foundProp = true;
+                            }
+                        }
+                    }
+                    document.getElementById('hw-ver').innerHTML = state.version;
+
                 } else {
-                    connText.innerHTML = "GAMEPAD DISCONNECTED";
+                    connText.innerHTML = "IDLE";
                     connText.style.color = "orange";
                 }
-            } else {
-                connText.innerHTML = "WII U API NOT DETECTED";
-                connText.style.color = "red";
             }
-
-            // High-frequency refresh
             window.webkitRequestAnimationFrame(updateLoop);
         }
 
-        // Initialize the refresh loop
         updateLoop();
     </script>
 </body>
