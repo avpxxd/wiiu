@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AVPxxd's Wii U Lab</title>
+    <title>Wii U Lab // A-G-R</title>
     <style>
         body {
             background-color: #111;
@@ -116,6 +116,9 @@
     <button id="rumble-btn" onclick="triggerRumble()">TEST RUMBLE</button>
 
     <script type="text/javascript">
+        // Direct reference to the gamepad object
+        var wiiuGamepad = (window.wiiu && window.wiiu.gamepad) ? window.wiiu.gamepad : null;
+        
         var horizon = document.getElementById('horizon-line');
         var aCircle = document.getElementById('action-circle');
         var connText = document.getElementById('conn');
@@ -124,22 +127,31 @@
         var BUTTON_A = 0x00008000;
 
         function triggerRumble() {
-            if (window.wiiu && window.wiiu.gamepad) {
-                // Play rumble for 500ms
-                window.wiiu.gamepad.playVibration(1, 500);
+            if (wiiuGamepad) {
+                // The first argument is a bitmask for motor patterns. 
+                // 0x0001 triggers the primary motor.
+                wiiuGamepad.playVibration(0x0001, 500);
+            } else {
+                alert("Gamepad object not found for Rumble");
             }
         }
 
         function mainLoop() {
-            if (window.wiiu && window.wiiu.gamepad) {
-                var state = window.wiiu.gamepad.update();
+            // Attempt to re-grab the object if it was missing
+            if (!wiiuGamepad && window.wiiu && window.wiiu.gamepad) {
+                wiiuGamepad = window.wiiu.gamepad;
+            }
 
-                if (state.isEnabled) {
+            if (wiiuGamepad) {
+                // Critical: update() must be called every frame to refresh internal state
+                var state = wiiuGamepad.update();
+
+                if (state && state.isEnabled) {
                     connText.innerHTML = "CONNECTED";
                     connText.style.color = "#00ff00";
 
                     // 1. GYRO LOGIC (Roll)
-                    // We rotate the horizon line based on the gamepad's roll
+                    // Ensure we are using the correct math for the WebKit version
                     var rollDegrees = state.gyroRoll * (180 / Math.PI);
                     horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
                     
@@ -147,26 +159,31 @@
                     document.getElementById('val-pitch').innerHTML = state.gyroPitch.toFixed(3);
 
                     // 2. A BUTTON LOGIC
+                    // We check against state.hold which reflects currently held buttons
                     if (state.hold & BUTTON_A) {
                         aCircle.className = "pressed";
-                        // Continuous rumble while holding A? (Optional)
-                        // window.wiiu.gamepad.playVibration(1, 100); 
                     } else {
                         aCircle.className = "";
                     }
 
                 } else {
-                    connText.innerHTML = "GAMEPAD DISCONNECTED";
-                    connText.style.color = "red";
+                    connText.innerHTML = "GAMEPAD DISCONNECTED / DISABLED";
+                    connText.style.color = "orange";
                 }
             } else {
-                connText.innerHTML = "UNSUPPORTED BROWSER";
+                connText.innerHTML = "WII U API NOT DETECTED";
+                connText.style.color = "red";
             }
 
-            window.webkitRequestAnimationFrame(mainLoop);
+            // Using webkitRequestAnimationFrame for compatibility with Wii U WebKit
+            if (window.webkitRequestAnimationFrame) {
+                window.webkitRequestAnimationFrame(mainLoop);
+            } else {
+                setTimeout(mainLoop, 16);
+            }
         }
 
-        // Start tracking
+        // Initialize
         mainLoop();
     </script>
 </body>
