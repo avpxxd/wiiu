@@ -125,49 +125,37 @@
 
         function triggerRumble() {
             if (window.wiiu && window.wiiu.gamepad) {
+                // Using 0x0001 bitmask as it is the most reliable "on" signal
+                // Some firmwares require the exact hex value vs integer 1
                 try {
-                    // Method 1: Integer mask (Standard)
-                    window.wiiu.gamepad.playVibration(1, 500);
+                    window.wiiu.gamepad.playVibration(0x0001, 500);
                 } catch(e) {
-                    try {
-                        // Method 2: Hex mask (Older firmware)
-                        window.wiiu.gamepad.playVibration(0x0001, 500);
-                    } catch(e2) {
-                        // Method 3: Direct pattern array (Experimental)
-                        if(window.wiiu.gamepad.setVibration) {
-                           window.wiiu.gamepad.setVibration([1], 500);
-                        }
-                    }
+                    // Fallback to integer if hex fails
+                    window.wiiu.gamepad.playVibration(1, 500);
                 }
             }
         }
 
-        function mainLoop() {
+        function updateLoop() {
             if (window.wiiu && window.wiiu.gamepad) {
-                var g = window.wiiu.gamepad;
-                
-                // Update the state
-                var state = g.update();
+                // Re-poll the state every frame
+                var state = window.wiiu.gamepad.update();
 
-                if (state && state.isEnabled) {
+                if (state.isEnabled) {
                     connText.innerHTML = "CONNECTED & ACTIVE";
                     connText.style.color = "#00ff00";
 
-                    // 1. IMPROVED GYRO LOGIC
-                    // We pull from gyroRoll directly. Note: on some browsers this is 'roll' 
-                    // but on Wii U NetFront it is specifically 'gyroRoll'.
-                    var roll = state.gyroRoll || 0;
-                    var pitch = state.gyroPitch || 0;
+                    // 1. GYRO DATA
+                    // Reverting to the direct access pattern from your working build
+                    var r = state.gyroRoll;
+                    var p = state.gyroPitch;
                     
-                    // The Wii U gives values in radians. Converting to degrees for the CSS.
-                    var rollDegrees = roll * (180 / Math.PI);
-                    
-                    // Applying transformation with fallbacks for older WebKit
+                    document.getElementById('val-roll').innerHTML = r.toFixed(4);
+                    document.getElementById('val-pitch').innerHTML = p.toFixed(4);
+
+                    // Horizon visual update (converting Radians to Degrees)
+                    var rollDegrees = r * (180 / Math.PI);
                     horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
-                    horizon.style.transform = "rotate(" + (-rollDegrees) + "deg)";
-                    
-                    document.getElementById('val-roll').innerHTML = roll.toFixed(4);
-                    document.getElementById('val-pitch').innerHTML = pitch.toFixed(4);
 
                     // 2. A BUTTON LOGIC
                     if (state.hold & BUTTON_A) {
@@ -177,7 +165,7 @@
                     }
 
                 } else {
-                    connText.innerHTML = "GAMEPAD NOT READY (CHECK BUTTONS)";
+                    connText.innerHTML = "GAMEPAD DISCONNECTED";
                     connText.style.color = "orange";
                 }
             } else {
@@ -185,17 +173,12 @@
                 connText.style.color = "red";
             }
 
-            if (window.webkitRequestAnimationFrame) {
-                window.webkitRequestAnimationFrame(mainLoop);
-            } else if (window.requestAnimationFrame) {
-                window.requestAnimationFrame(mainLoop);
-            } else {
-                setTimeout(mainLoop, 16);
-            }
+            // High-frequency refresh
+            window.webkitRequestAnimationFrame(updateLoop);
         }
 
-        // Start polling
-        mainLoop();
+        // Initialize the refresh loop
+        updateLoop();
     </script>
 </body>
 </html>
