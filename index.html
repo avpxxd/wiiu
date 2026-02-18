@@ -116,9 +116,6 @@
     <button id="rumble-btn" onclick="triggerRumble()">TEST RUMBLE</button>
 
     <script type="text/javascript">
-        // Direct reference to the gamepad object
-        var wiiuGamepad = (window.wiiu && window.wiiu.gamepad) ? window.wiiu.gamepad : null;
-        
         var horizon = document.getElementById('horizon-line');
         var aCircle = document.getElementById('action-circle');
         var connText = document.getElementById('conn');
@@ -127,39 +124,48 @@
         var BUTTON_A = 0x00008000;
 
         function triggerRumble() {
-            if (wiiuGamepad) {
-                // The first argument is a bitmask for motor patterns. 
-                // 0x0001 triggers the primary motor.
-                wiiuGamepad.playVibration(0x0001, 500);
-            } else {
-                alert("Gamepad object not found for Rumble");
+            // Re-check the object immediately on click
+            var g = window.wiiu ? window.wiiu.gamepad : null;
+            if (g) {
+                try {
+                    // Try the most common rumble command
+                    g.playVibration(1, 500);
+                } catch(e) {
+                    try {
+                        // Fallback pattern if the first fails
+                        g.playVibration(0x0001, 500);
+                    } catch(e2) {
+                        console.log("Rumble failed");
+                    }
+                }
             }
         }
 
         function mainLoop() {
-            // Attempt to re-grab the object if it was missing
-            if (!wiiuGamepad && window.wiiu && window.wiiu.gamepad) {
-                wiiuGamepad = window.wiiu.gamepad;
-            }
-
-            if (wiiuGamepad) {
-                // Critical: update() must be called every frame to refresh internal state
-                var state = wiiuGamepad.update();
+            // Wii U GamePad API is accessed via window.wiiu.gamepad
+            if (window.wiiu && window.wiiu.gamepad) {
+                var g = window.wiiu.gamepad;
+                
+                // You MUST call update() to populate the current state object
+                var state = g.update();
 
                 if (state && state.isEnabled) {
-                    connText.innerHTML = "CONNECTED";
+                    connText.innerHTML = "CONNECTED & ACTIVE";
                     connText.style.color = "#00ff00";
 
                     // 1. GYRO LOGIC (Roll)
-                    // Ensure we are using the correct math for the WebKit version
-                    var rollDegrees = state.gyroRoll * (180 / Math.PI);
+                    // Note: Ensure the GamePad isn't laying flat during initialization
+                    var roll = state.gyroRoll || 0;
+                    var pitch = state.gyroPitch || 0;
+                    
+                    var rollDegrees = roll * (180 / Math.PI);
                     horizon.style.webkitTransform = "rotate(" + (-rollDegrees) + "deg)";
                     
-                    document.getElementById('val-roll').innerHTML = state.gyroRoll.toFixed(3);
-                    document.getElementById('val-pitch').innerHTML = state.gyroPitch.toFixed(3);
+                    document.getElementById('val-roll').innerHTML = roll.toFixed(3);
+                    document.getElementById('val-pitch').innerHTML = pitch.toFixed(3);
 
                     // 2. A BUTTON LOGIC
-                    // We check against state.hold which reflects currently held buttons
+                    // Logic check: bitwise AND against the hold bitmask
                     if (state.hold & BUTTON_A) {
                         aCircle.className = "pressed";
                     } else {
@@ -167,7 +173,7 @@
                     }
 
                 } else {
-                    connText.innerHTML = "GAMEPAD DISCONNECTED / DISABLED";
+                    connText.innerHTML = "GAMEPAD NOT READY (CHECK GAMEPAD)";
                     connText.style.color = "orange";
                 }
             } else {
@@ -175,7 +181,7 @@
                 connText.style.color = "red";
             }
 
-            // Using webkitRequestAnimationFrame for compatibility with Wii U WebKit
+            // Sync with browser refresh
             if (window.webkitRequestAnimationFrame) {
                 window.webkitRequestAnimationFrame(mainLoop);
             } else {
@@ -183,7 +189,7 @@
             }
         }
 
-        // Initialize
+        // Start polling
         mainLoop();
     </script>
 </body>
