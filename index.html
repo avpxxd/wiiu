@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AVPxxd's Wii U Dev Tools</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: monospace;
+            margin: 20px;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        h1 { color: #fff; border-bottom: 2px solid #333; }
+        .data-field { margin-bottom: 10px; font-size: 18px; }
+        .active { color: #fff; font-weight: bold; background: #222; }
+        #status { color: red; }
+        #status.online { color: #0f0; }
+    </style>
+</head>
+<body>
+
+    <h1>Wii U GamePad Data</h1>
+    <div id="status">Searching for GamePad...</div>
+    
+    <div class="data-field">Buttons: <span id="btn-hex">0x00000000</span></div>
+    <div class="data-field">Left Stick: <span id="l-stick">0.00, 0.00</span></div>
+    <div class="data-field">Right Stick: <span id="r-stick">0.00, 0.00</span></div>
+    <div class="data-field">Touch: <span id="touch-pos">No Touch</span></div>
+    <hr>
+    <div class="data-field">Acc (X,Y,Z): <span id="accel">0, 0, 0</span></div>
+    <div class="data-field">Gyro (Roll,Pitch,Yaw): <span id="gyro">0, 0, 0</span></div>
+
+    <script type="text/javascript">
+        // Standard ES5 Variables
+        var statusEl = document.getElementById('status');
+        var btnEl = document.getElementById('btn-hex');
+        var lStickEl = document.getElementById('l-stick');
+        var rStickEl = document.getElementById('r-stick');
+        var touchEl = document.getElementById('touch-pos');
+        var accEl = document.getElementById('accel');
+        var gyroEl = document.getElementById('gyro');
+
+        function updateLoop() {
+            // Check if the API exists
+            if (window.wiiu && window.wiiu.gamepad) {
+                var state = window.wiiu.gamepad.update();
+
+                if (state.isEnabled) {
+                    statusEl.innerHTML = "GAMEPAD CONNECTED";
+                    statusEl.className = "online";
+
+                    // 1. Buttons (Hexadecimal representation)
+                    btnEl.innerHTML = "0x" + state.hold.toString(16).toUpperCase();
+
+                    // 2. Sticks (Rounded for readability)
+                    lStickEl.innerHTML = state.lStickX.toFixed(2) + ", " + state.lStickY.toFixed(2);
+                    rStickEl.innerHTML = state.rStickX.toFixed(2) + ", " + state.rStickY.toFixed(2);
+
+                    // 3. Touch Screen
+                    if (state.isTouched) {
+                        touchEl.innerHTML = "X: " + state.tpX + " Y: " + state.tpY;
+                        touchEl.className = "data-field active";
+                    } else {
+                        touchEl.innerHTML = "No Touch";
+                        touchEl.className = "data-field";
+                    }
+
+                    // 4. Motion Sensors
+                    accEl.innerHTML = state.accX.toFixed(3) + ", " + state.accY.toFixed(3) + ", " + state.accZ.toFixed(3);
+                    gyroEl.innerHTML = state.gyroRoll.toFixed(3) + ", " + state.gyroPitch.toFixed(3) + ", " + state.gyroYaw.toFixed(3);
+
+                } else {
+                    statusEl.innerHTML = "GAMEPAD DISCONNECTED";
+                    statusEl.className = "";
+                }
+            } else {
+                statusEl.innerHTML = "NOT A WII U BROWSER";
+            }
+
+            // Standard requestAnimationFrame (supported in Wii U WebKit)
+            window.webkitRequestAnimationFrame(updateLoop);
+        }
+
+        // Start the loop
+        updateLoop();
+    </script>
+</body>
+</html>
