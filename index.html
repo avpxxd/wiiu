@@ -1,175 +1,348 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wii U Lab // A-G</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <title>Wii U - Internet browser specs - sample</title>
+    <meta name="description" content="Sample page to obtain values from the Wii U GamePad using the Wii U Internet browser.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         body {
-            background-color: #111;
-            color: #eee;
-            font-family: sans-serif;
-            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
             padding: 20px;
-            overflow: hidden;
-            text-align: center;
-        }
-
-        #status-bar {
-            background: #222;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        #horizon-container {
-            width: 100%;
-            height: 150px;
-            background: #000;
-            border: 2px solid #444;
-            position: relative;
-            overflow: hidden;
-            border-radius: 15px;
-        }
-
-        #horizon-line {
-            width: 200%;
-            height: 4px;
-            background: #00ff00;
-            position: absolute;
-            top: 50%;
-            left: -50%;
-            box-shadow: 0 0 15px #00ff00;
-        }
-
-        #action-circle {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            border: 5px solid #333;
-            margin: 25px auto;
-            line-height: 100px;
-            font-size: 40px;
-        }
-
-        .pressed {
-            background-color: #00ff00;
-            color: #000;
-            border-color: #fff !important;
-            transform: scale(1.1);
-        }
-
-        .data-grid {
-            display: table;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .data-row { display: table-row; }
-        .data-cell {
-            display: table-cell;
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            font-size: 16px;
+            background-color: #fff;
         }
         
-        #debug-panel {
+        h1 {
+            font-size: 26px;
+            margin-bottom: 20px;
+        }
+        
+        #warning {
             font-size: 12px;
-            color: #666;
-            margin-top: 25px;
-            text-align: left;
-            background: #050505;
-            padding: 10px;
-            border: 1px solid #222;
+            color: red;
+            margin-bottom: 20px;
+        }
+        
+        table {
+            border-collapse: collapse;
+        }
+        
+        table td {
+            padding: 2px 5px;
+        }
+        
+        #Buttons {
+            position: absolute;
+            left: 8px;
+            top: 100px;
+            font-size: 10px;
+        }
+        
+        #Buttons tr {
+            background-color: #eee;
+        }
+        
+        svg {
+            border: 1px solid #000;
+            margin: 2px;
+        }
+        
+        .svg-container {
+            display: inline-block;
         }
     </style>
 </head>
+
 <body>
-
-    <div id="status-bar">LINK: <span id="conn">WAITING</span></div>
-
-    <div id="horizon-container">
-        <div id="horizon-line"></div>
-    </div>
-    <p style="color: #888; font-size: 14px; margin-top: 10px;">Roll the GamePad to tilt the green line</p>
-
-    <div id="action-circle">A</div>
-
-    <div class="data-grid">
-        <div class="data-row">
-            <div class="data-cell">Roll (dirZx)</div>
-            <div class="data-cell" id="val-x">0.00</div>
-        </div>
-        <div class="data-row">
-            <div class="data-cell">Pitch (dirZy)</div>
-            <div class="data-cell" id="val-y">0.00</div>
-        </div>
-    </div>
-    
-    <div id="debug-panel">
-        <div>Active Sensor: <span id="prop-scan">Scanning...</span></div>
-        <div>Raw Z-Data: <span id="raw-z">0</span></div>
-    </div>
-
-    <script type="text/javascript">
-        var horizon = document.getElementById('horizon-line');
-        var aCircle = document.getElementById('action-circle');
-        var connText = document.getElementById('conn');
+    <div style="min-height: 600px;">
+        <h1>Sample page to obtain values from the Wii U GamePad.</h1>
         
-        var BUTTON_A = 0x00008000;
+        <div id="warning">
+            Either the Wii U Internet Browser is not being used, or the values from the Wii U GamePad could not properly be obtained.
+        </div>
+        
+        <!-- Buttons Table -->
+        <table id="Buttons">
+            <tr><td></td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_LEFT</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_RIGHT</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_UP</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_DOWN</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_LEFT</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_RIGHT</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_UP</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_DOWN</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td>STICK_L</td><td>0</td></tr>
+            <tr><td>STICK_R</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td>A</td><td>0</td></tr>
+            <tr><td>B</td><td>0</td></tr>
+            <tr><td>X</td><td>0</td></tr>
+            <tr><td>Y</td><td>0</td></tr>
+            <tr><td>LEFT</td><td>0</td></tr>
+            <tr><td>RIGHT</td><td>0</td></tr>
+            <tr><td>UP</td><td>0</td></tr>
+            <tr><td>DOWN</td><td>0</td></tr>
+            <tr><td>ZL</td><td>0</td></tr>
+            <tr><td>ZR</td><td>0</td></tr>
+            <tr><td>L</td><td>0</td></tr>
+            <tr><td>R</td><td>0</td></tr>
+            <tr><td>PLUS</td><td>0</td></tr>
+            <tr><td>MINUS</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+        </table>
+        
+        <!-- Touch Position -->
+        <table style="position: absolute; top: 96px; left: 240px">
+            <tr><td>Touch position within the content area.</td></tr>
+            <tr id="touchpanel"><td>No touch detected.</td></tr>
+        </table>
+        
+        <!-- Analog Sticks -->
+        <table style="position: absolute; top: 140px; left: 240px">
+            <tr id="stick"><td></td></tr>
+        </table>
+        
+        <!-- Direction indicators -->
+        <table style="position: absolute; top: 300px; left: 240px;">
+            <tr><td>From the Front</td><td>From the Top</td></tr>
+            <tr>
+                <td>
+                    <svg id="directionFront" width="128" height="128" viewBox="-64 -64 128 128">
+                        <line x1="0" y1="0" x2="64" y2="0" stroke="red"/>
+                        <line x1="0" y1="0" x2="0" y2="-64" stroke="green"/>
+                        <line x1="0" y1="0" x2="0" y2="0" stroke="blue"/>
+                    </svg>
+                </td>
+                <td>
+                    <svg id="directionTop" width="128" height="128" viewBox="-64 -64 128 128">
+                        <line x1="0" y1="0" x2="64" y2="0" stroke="red"/>
+                        <line x1="0" y1="0" x2="0" y2="0" stroke="green"/>
+                        <line x1="0" y1="0" x2="0" y2="64" stroke="blue"/>
+                    </svg>
+                </td>
+            </tr>
+        </table>
+        
+        <!-- Gyro, Angle, and Acceleration -->
+        <table style="position: absolute; top: 100px; left: 600px;">
+            <tr id="gyro"><td></td></tr>
+            <tr id="angle"><td></td></tr>
+            <tr id="acc"><td></td></tr>
+        </table>
+    </div>
 
-        function updateLoop() {
-            if (window.wiiu && window.wiiu.gamepad) {
-                var state = window.wiiu.gamepad.update();
-
-                if (state && state.isEnabled) {
-                    connText.innerHTML = "ACTIVE";
-                    connText.style.color = "#00ff00";
-
-                    // --- SENSOR MAPPING ---
-                    // Mapping Horizon to X-Axis (dirZx) as requested
-                    var zX = state.dirZx || 0;
-                    var zY = state.dirZy || 0;
-                    var zZ = state.dirZz || 0;
-
-                    // Update UI Numbers
-                    document.getElementById('val-x').innerHTML = zX.toFixed(4);
-                    document.getElementById('val-y').innerHTML = zY.toFixed(4);
-                    document.getElementById('raw-z').innerHTML = zZ.toFixed(4);
-
-                    // Horizon visual update mapped to X-axis
-                    // A multiplier (e.g., 45 or 90) helps make the movement visible
-                    var tilt = zX * 45; 
-                    horizon.style.webkitTransform = "rotate(" + tilt + "deg)";
-                    horizon.style.transform = "rotate(" + tilt + "deg)";
-
-                    // --- BUTTONS ---
-                    if (state.hold & BUTTON_A) {
-                        aCircle.className = "pressed";
-                    } else {
-                        aCircle.className = "";
-                    }
-
-                    // --- DYNAMIC PROP SCAN ---
-                    if (!window.scanDone) {
-                        for (var p in state) {
-                            if (typeof state[p] === "number" && Math.abs(state[p]) > 0.01 && p !== "hold") {
-                                document.getElementById('prop-scan').innerHTML = p;
-                                window.scanDone = true;
-                            }
-                        }
-                    }
-
-                } else {
-                    connText.innerHTML = "IDLE / DISCONNECTED";
-                    connText.style.color = "orange";
+    <script>
+        // Create SVG circle elements
+        function createCircleSvg(id, xname, yname) {
+            const WIDTH = 150;
+            const HEIGHT = 150;
+            const svgNS = "http://www.w3.org/2000/svg";
+            
+            const svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", WIDTH);
+            svg.setAttribute("height", HEIGHT);
+            svg.setAttribute("viewBox", "-40 -40 80 80");
+            svg.setAttribute("id", id);
+            
+            // Circle
+            const circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("cx", "0");
+            circle.setAttribute("cy", "0");
+            circle.setAttribute("r", "32");
+            circle.setAttribute("stroke", "gray");
+            circle.setAttribute("fill", "white");
+            circle.setAttribute("stroke-width", "1");
+            svg.appendChild(circle);
+            
+            // X-axis
+            const xaxis = document.createElementNS(svgNS, "line");
+            xaxis.setAttribute("x1", "-32");
+            xaxis.setAttribute("x2", "32");
+            xaxis.setAttribute("y1", "0");
+            xaxis.setAttribute("y2", "0");
+            xaxis.setAttribute("stroke", "gray");
+            xaxis.setAttribute("stroke-width", "0.5");
+            svg.appendChild(xaxis);
+            
+            // Y-axis
+            const yaxis = document.createElementNS(svgNS, "line");
+            yaxis.setAttribute("x1", "0");
+            yaxis.setAttribute("x2", "0");
+            yaxis.setAttribute("y1", "-32");
+            yaxis.setAttribute("y2", "32");
+            yaxis.setAttribute("stroke", "gray");
+            yaxis.setAttribute("stroke-width", "0.5");
+            svg.appendChild(yaxis);
+            
+            // Value line
+            const value = document.createElementNS(svgNS, "line");
+            value.setAttribute("x1", "0");
+            value.setAttribute("x2", "0");
+            value.setAttribute("y1", "0");
+            value.setAttribute("y2", "0");
+            value.setAttribute("stroke", "red");
+            value.setAttribute("stroke-width", "3");
+            value.setAttribute("id", "value");
+            svg.appendChild(value);
+            
+            // Title text
+            const titleText = document.createElementNS(svgNS, "text");
+            titleText.setAttributeNS(null, "x", "-40");
+            titleText.setAttributeNS(null, "y", "-30");
+            titleText.setAttributeNS(null, "font-size", "10");
+            titleText.id = "titleText";
+            titleText.textContent = id;
+            svg.appendChild(titleText);
+            
+            // Value text
+            const valueText = document.createElementNS(svgNS, "text");
+            valueText.setAttributeNS(null, "x", "-40");
+            valueText.setAttributeNS(null, "y", "38");
+            valueText.setAttributeNS(null, "font-size", "10");
+            valueText.id = "valueText";
+            valueText.textContent = "0.0000";
+            svg.appendChild(valueText);
+            
+            // Axis labels
+            if (xname) {
+                const xAxisText = document.createElementNS(svgNS, "text");
+                xAxisText.setAttributeNS(null, "x", "32");
+                xAxisText.setAttributeNS(null, "y", "8");
+                xAxisText.setAttributeNS(null, "font-size", "8");
+                xAxisText.textContent = xname;
+                svg.appendChild(xAxisText);
+            }
+            
+            if (yname) {
+                const yAxisText = document.createElementNS(svgNS, "text");
+                yAxisText.setAttributeNS(null, "x", "0");
+                yAxisText.setAttributeNS(null, "y", "-32");
+                yAxisText.setAttributeNS(null, "font-size", "8");
+                yAxisText.textContent = yname;
+                svg.appendChild(yAxisText);
+            }
+            
+            return svg;
+        }
+        
+        // Dummy data object
+        function DummyData() {
+            this.hold = 0;
+            this.lStickX = 0;
+            this.lStickY = 0;
+            this.rStickX = 0;
+            this.rStickY = 0;
+            this.gyroX = 0;
+            this.gyroY = 0;
+            this.gyroZ = 0;
+            this.angleX = 0;
+            this.angleY = 0;
+            this.angleZ = 0;
+            this.accX = 0;
+            this.accY = 0;
+            this.accZ = 0;
+            this.dirXx = 1.0;
+            this.dirXy = 0.0;
+            this.dirXz = 0.0;
+            this.dirYx = 0.0;
+            this.dirYy = 1.0;
+            this.dirYz = 0.0;
+            this.dirZx = 0.0;
+            this.dirZy = 0.0;
+            this.dirZz = 1.0;
+            this.tpTouch = 0;
+            this.tpValidity = 0;
+            this.contentX = 0;
+            this.contentY = 0;
+        }
+        
+        // Initialize all SVG elements
+        function init() {
+            // Add stick visualizations
+            const stickCell = document.getElementById("stick").getElementsByTagName("td")[0];
+            stickCell.appendChild(createCircleSvg("lStick"));
+            stickCell.appendChild(createCircleSvg("rStick"));
+            
+            // Add gyro visualizations
+            const gyroCell = document.getElementById("gyro").getElementsByTagName("td")[0];
+            ["gyroX", "gyroY", "gyroZ"].forEach(id => {
+                gyroCell.appendChild(createCircleSvg(id));
+            });
+            
+            // Add angle visualizations
+            const angleCell = document.getElementById("angle").getElementsByTagName("td")[0];
+            ["angleX", "angleY", "angleZ"].forEach(id => {
+                angleCell.appendChild(createCircleSvg(id));
+            });
+            
+            // Add acceleration visualizations
+            const accCell = document.getElementById("acc").getElementsByTagName("td")[0];
+            accCell.appendChild(createCircleSvg("AccXY", "X", "Y"));
+            accCell.appendChild(createCircleSvg("AccZY", "Z", "Y"));
+        }
+        
+        // Update button states
+        function updateButtons(state) {
+            const elms = document.getElementById("Buttons").getElementsByTagName("td");
+            let mask = 0x80000000;
+            for (let i = 0; i < elms.length; i += 2, mask = (mask >>> 1)) {
+                const e = elms[i + 1];
+                const isHeld = (state.hold & 0x7f86fffc & mask) ? 1 : 0;
+                e.innerHTML = (isHeld ? "1" : "0");
+            }
+        }
+        
+        // Main update function
+        function update() {
+            const DISTANCE = 32;
+            let state;
+            
+            // Check for Wii U gamepad API
+            if (window.wiiu) {
+                state = window.wiiu.gamepad.update();
+                if (!state.isEnabled || !state.isDataValid) {
+                    state = null;
                 }
             }
-            window.webkitRequestAnimationFrame(updateLoop);
+            
+            // Use dummy data if not on Wii U
+            if (!state) {
+                state = new DummyData();
+            }
+            
+            updateButtons(state);
+            
+            // Update stick positions
+            ["lStick", "rStick"].forEach((id, idx) => {
+                const svgElem = document.getElementById(id);
+                const valElem = svgElem.getElementById("value");
+                const xVal = idx === 0 ? state.lStickX : state.rStickX;
+                const yVal = idx === 0 ? state.lStickY : state.rStickY;
+                valElem.setAttribute("x2", DISTANCE * xVal);
+                valElem.setAttribute("y2", DISTANCE * -yVal);
+            });
+            
+            // Update touch panel
+            const txtItem = document.getElementById("touchpanel").getElementsByTagName("td")[0];
+            if (state.tpTouch == 1 && state.tpValidity == 0) {
+                txtItem.innerHTML = "(" + state.contentX + ", " + state.contentY + ")";
+            } else {
+                txtItem.innerHTML = "No touch detected.";
+            }
         }
-
-        updateLoop();
+        
+        // Initialize and start updates
+        init();
+        setInterval(update, 20);
     </script>
 </body>
 </html>
