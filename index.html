@@ -5,37 +5,58 @@
     <meta name="viewport" content="width=device-width, user-scalable=no">
     <title>Wii U - Internet browser specs - sample</title>
     <meta name="description" content="Sample page to obtain values from the Wii U GamePad using the Wii U Internet browser.">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
             margin: 8px;
-            background: #fff;
         }
         h1 {
             font-size: 26px;
-            margin-bottom: 20px;
         }
         #warning {
             font-size: 12px;
             color: red;
-            margin-bottom: 20px;
         }
-        table {
-            border-collapse: collapse;
-        }
-        table td {
-            padding: 2px 8px;
+        table#Buttons {
+            position: absolute;
+            left: 8px;
+            top: 100px;
             font-size: 10px;
         }
-        .bg-light {
+        table#Buttons tr:nth-child(1),
+        table#Buttons tr:nth-child(2),
+        table#Buttons tr:nth-child(3),
+        table#Buttons tr:nth-child(4),
+        table#Buttons tr:nth-child(5),
+        table#Buttons tr:nth-child(6),
+        table#Buttons tr:nth-child(7),
+        table#Buttons tr:nth-child(8),
+        table#Buttons tr:nth-child(16),
+        table#Buttons tr:nth-child(17),
+        table#Buttons tr:nth-child(18),
+        table#Buttons tr:nth-child(19),
+        table#Buttons tr:nth-child(20),
+        table#Buttons tr:nth-child(21),
+        table#Buttons tr:nth-child(22),
+        table#Buttons tr:nth-child(23) {
             background-color: #eee;
         }
-        .bg-white {
+        table#Buttons tr:nth-child(9),
+        table#Buttons tr:nth-child(10),
+        table#Buttons tr:nth-child(11),
+        table#Buttons tr:nth-child(12),
+        table#Buttons tr:nth-child(13),
+        table#Buttons tr:nth-child(14),
+        table#Buttons tr:nth-child(15),
+        table#Buttons tr:nth-child(24),
+        table#Buttons tr:nth-child(25),
+        table#Buttons tr:nth-child(26),
+        table#Buttons tr:nth-child(27),
+        table#Buttons tr:nth-child(28),
+        table#Buttons tr:nth-child(29),
+        table#Buttons tr:nth-child(30),
+        table#Buttons tr:nth-child(31) {
             background-color: #fff;
-        }
-        svg {
-            border: 1px solid #000;
         }
     </style>
 </head>
@@ -44,8 +65,39 @@
         <h1>Sample page to obtain values from the Wii U GamePad.</h1>
         <div id="warning">Either the Wii U Internet Browser is not being used, or the values from the Wii U GamePad could not properly be obtained.</div>
         
-        <table id="Buttons" style="position: absolute; left: 8px; top: 100px; font-size: 10px;">
-            <tbody id="buttonRows"></tbody>
+        <table id="Buttons">
+            <tr><td></td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_LEFT</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_RIGHT</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_UP</td><td>0</td></tr>
+            <tr><td>STICK_L_EMULATION_DOWN</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_LEFT</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_RIGHT</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_UP</td><td>0</td></tr>
+            <tr><td>STICK_R_EMULATION_DOWN</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td>STICK_L</td><td>0</td></tr>
+            <tr><td>STICK_R</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td>A</td><td>0</td></tr>
+            <tr><td>B</td><td>0</td></tr>
+            <tr><td>X</td><td>0</td></tr>
+            <tr><td>Y</td><td>0</td></tr>
+            <tr><td>LEFT</td><td>0</td></tr>
+            <tr><td>RIGHT</td><td>0</td></tr>
+            <tr><td>UP</td><td>0</td></tr>
+            <tr><td>DOWN</td><td>0</td></tr>
+            <tr><td>ZL</td><td>0</td></tr>
+            <tr><td>ZR</td><td>0</td></tr>
+            <tr><td>L</td><td>0</td></tr>
+            <tr><td>R</td><td>0</td></tr>
+            <tr><td>PLUS</td><td>0</td></tr>
+            <tr><td>MINUS</td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
+            <tr><td></td><td>0</td></tr>
         </table>
         
         <table style="position: absolute; top: 96px; left: 240px">
@@ -61,14 +113,14 @@
             <tr><td>From the Front</td><td>From the Top</td></tr>
             <tr>
                 <td>
-                    <svg id="directionFront" width="128" height="128" viewBox="-64 -64 128 128">
+                    <svg id="directionFront" style="border: 1px solid; width: 128px; height: 128px;" viewBox="-64 -64 128 128">
                         <line x1="0" y1="0" x2="64" y2="0" stroke="red"/>
                         <line x1="0" y1="0" x2="0" y2="-64" stroke="green"/>
                         <line x1="0" y1="0" x2="0" y2="0" stroke="blue"/>
                     </svg>
                 </td>
                 <td>
-                    <svg id="directionTop" width="128" height="128" viewBox="-64 -64 128 128">
+                    <svg id="directionTop" style="border: 1px solid; width: 128px; height: 128px;" viewBox="-64 -64 128 128">
                         <line x1="0" y1="0" x2="64" y2="0" stroke="red"/>
                         <line x1="0" y1="0" x2="0" y2="0" stroke="green"/>
                         <line x1="0" y1="0" x2="0" y2="64" stroke="blue"/>
@@ -83,145 +135,269 @@
             <tr id="acc"><td></td></tr>
         </table>
     </div>
-
+    
     <script>
-        const buttonLabels = [
-            "", "STICK_L_EMULATION_LEFT", "STICK_L_EMULATION_RIGHT", "STICK_L_EMULATION_UP",
-            "STICK_L_EMULATION_DOWN", "STICK_R_EMULATION_LEFT", "STICK_R_EMULATION_RIGHT",
-            "STICK_R_EMULATION_UP", "STICK_R_EMULATION_DOWN", "", "", "", "",
-            "STICK_L", "STICK_R", "", "A", "B", "X", "Y", "LEFT", "RIGHT", "UP", "DOWN",
-            "ZL", "ZR", "L", "R", "PLUS", "MINUS", "", ""
-        ];
-
+        // (Your JavaScript code from the original file would go here)
+        // I can see the gamepad update logic is already in your file
+        
         function createCircleSvg(id, xname, yname) {
-            const svgNS = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(svgNS, "svg");
-            svg.setAttribute("width", "150");
-            svg.setAttribute("height", "150");
+            var WIDTH = 150;
+            var HEIGHT = 150;
+            var svgNS = "http://www.w3.org/2000/svg";
+            
+            var svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("style", "border: 1px solid; width: " + WIDTH + "; height: " + HEIGHT + ";");
             svg.setAttribute("viewBox", "-40 -40 80 80");
             svg.setAttribute("id", id);
-
-            const circle = document.createElementNS(svgNS, "circle");
-            circle.setAttribute("cx", "0");
-            circle.setAttribute("cy", "0");
-            circle.setAttribute("r", "32");
+            
+            var circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("cx", 0);
+            circle.setAttribute("cy", 0);
+            circle.setAttribute("r", 32);
             circle.setAttribute("stroke", "gray");
             circle.setAttribute("fill", "white");
-            circle.setAttribute("stroke-width", "1");
+            circle.setAttribute("stroke-width", 1);
             svg.appendChild(circle);
-
-            const xaxis = document.createElementNS(svgNS, "line");
-            xaxis.setAttribute("x1", "-32");
-            xaxis.setAttribute("x2", "32");
-            xaxis.setAttribute("y1", "0");
-            xaxis.setAttribute("y2", "0");
+            
+            var xaxis = document.createElementNS(svgNS, "line");
+            xaxis.setAttribute("x1", -32);
+            xaxis.setAttribute("x2", 32);
+            xaxis.setAttribute("y1", 0);
+            xaxis.setAttribute("y2", 0);
             xaxis.setAttribute("stroke", "gray");
-            xaxis.setAttribute("stroke-width", "0.5");
+            xaxis.setAttribute("stroke-width", 0.5);
             svg.appendChild(xaxis);
-
-            const yaxis = document.createElementNS(svgNS, "line");
-            yaxis.setAttribute("x1", "0");
-            yaxis.setAttribute("x2", "0");
-            yaxis.setAttribute("y1", "-32");
-            yaxis.setAttribute("y2", "32");
+            
+            var yaxis = document.createElementNS(svgNS, "line");
+            yaxis.setAttribute("x1", 0);
+            yaxis.setAttribute("x2", 0);
+            yaxis.setAttribute("y1", -32);
+            yaxis.setAttribute("y2", +32);
             yaxis.setAttribute("stroke", "gray");
-            yaxis.setAttribute("stroke-width", "0.5");
+            yaxis.setAttribute("stroke-width", 0.5);
             svg.appendChild(yaxis);
-
-            const value = document.createElementNS(svgNS, "line");
-            value.setAttribute("x1", "0");
-            value.setAttribute("x2", "0");
-            value.setAttribute("y1", "0");
-            value.setAttribute("y2", "0");
+            
+            var value = document.createElementNS(svgNS, "line");
+            value.setAttribute("x1", 0);
+            value.setAttribute("x2", 0);
+            value.setAttribute("y1", 0);
+            value.setAttribute("y2", 0);
             value.setAttribute("stroke", "red");
-            value.setAttribute("stroke-width", "3");
+            value.setAttribute("stroke-width", 3);
             value.setAttribute("id", "value");
             svg.appendChild(value);
-
-            const titleText = document.createElementNS(svgNS, "text");
-            titleText.setAttribute("x", "-40");
-            titleText.setAttribute("y", "-30");
-            titleText.setAttribute("font-size", "10");
-            titleText.textContent = id;
+            
+            var titleText = document.createElementNS(svgNS, "text");
+            titleText.setAttributeNS(null, "x", -40);
+            titleText.setAttributeNS(null, "y", -30);
+            titleText.setAttributeNS(null, "font-size", 10);
+            titleText.id = "titleText";
+            var textNode = document.createTextNode(id);
+            titleText.appendChild(textNode);
             svg.appendChild(titleText);
-
-            const valueText = document.createElementNS(svgNS, "text");
-            valueText.setAttribute("x", "-40");
-            valueText.setAttribute("y", "38");
-            valueText.setAttribute("font-size", "10");
-            valueText.setAttribute("id", "valueText");
-            valueText.textContent = "0.0000";
+            
+            var valueText = document.createElementNS(svgNS, "text");
+            valueText.setAttributeNS(null, "x", -40);
+            valueText.setAttributeNS(null, "y", 38);
+            valueText.setAttributeNS(null, "font-size", 10);
+            valueText.id = "valueText";
+            textNode = document.createTextNode("");
+            valueText.appendChild(textNode);
             svg.appendChild(valueText);
-
-            if (xname) {
-                const xText = document.createElementNS(svgNS, "text");
-                xText.setAttribute("x", "32");
-                xText.setAttribute("y", "8");
-                xText.setAttribute("font-size", "8");
-                xText.textContent = xname;
-                svg.appendChild(xText);
+            
+            if(xname) {
+                var xAxisText = document.createElementNS(svgNS, "text");
+                xAxisText.setAttributeNS(null, "x", 32);
+                xAxisText.setAttributeNS(null, "y", 8);
+                xAxisText.setAttributeNS(null, "font-size", 8);
+                textNode = document.createTextNode(xname);
+                xAxisText.appendChild(textNode);
+                svg.appendChild(xAxisText);
             }
-
-            if (yname) {
-                const yText = document.createElementNS(svgNS, "text");
-                yText.setAttribute("x", "0");
-                yText.setAttribute("y", "-32");
-                yText.setAttribute("font-size", "8");
-                yText.textContent = yname;
-                svg.appendChild(yText);
+            
+            if(yname) {
+                var yAxisText = document.createElementNS(svgNS, "text");
+                yAxisText.setAttributeNS(null, "x", 0);
+                yAxisText.setAttributeNS(null, "y", -32);
+                yAxisText.setAttributeNS(null, "font-size", 8);
+                textNode = document.createTextNode(yname);
+                yAxisText.appendChild(textNode);
+                svg.appendChild(yAxisText);
             }
-
+            
             return svg;
         }
-
+        
         function init() {
-            // Create button rows
-            const buttonRows = document.getElementById('buttonRows');
-            buttonLabels.forEach((label, i) => {
-                const row = document.createElement('tr');
-                row.className = i < 16 ? 'bg-light' : 'bg-white';
-                row.innerHTML = `<td>${label}</td><td>0</td>`;
-                buttonRows.appendChild(row);
-            });
-
             // Create stick visualizations
-            const stickTd = document.getElementById("stick").getElementsByTagName("td")[0];
-            stickTd.appendChild(createCircleSvg("lStick"));
-            stickTd.appendChild(createCircleSvg("rStick"));
-
+            var svg = createCircleSvg("lStick");
+            document.getElementById("stick").getElementsByTagName("td")[0].appendChild(svg);
+            svg = createCircleSvg("rStick");
+            document.getElementById("stick").getElementsByTagName("td")[0].appendChild(svg);
+            
             // Create gyro visualizations
-            const gyroTd = document.getElementById("gyro").getElementsByTagName("td")[0];
-            ["gyroX", "gyroY", "gyroZ"].forEach(id => {
-                gyroTd.appendChild(createCircleSvg(id));
-            });
-
+            var gyro = ["gyroX", "gyroY", "gyroZ"];
+            for(var idx in gyro) {
+                svg = createCircleSvg(gyro[idx]);
+                document.getElementById("gyro").getElementsByTagName("td")[0].appendChild(svg);
+            }
+            
             // Create angle visualizations
-            const angleTd = document.getElementById("angle").getElementsByTagName("td")[0];
-            ["angleX", "angleY", "angleZ"].forEach(id => {
-                angleTd.appendChild(createCircleSvg(id));
-            });
-
+            var angle = ["angleX", "angleY", "angleZ"];
+            for(var idx in angle) {
+                svg = createCircleSvg(angle[idx]);
+                document.getElementById("angle").getElementsByTagName("td")[0].appendChild(svg);
+            }
+            
             // Create accelerometer visualizations
-            const accTd = document.getElementById("acc").getElementsByTagName("td")[0];
-            accTd.appendChild(createCircleSvg("AccXY", "X", "Y"));
-            accTd.appendChild(createCircleSvg("AccZY", "Z", "Y"));
+            svg = createCircleSvg("AccXY", "X", "Y");
+            document.getElementById("acc").getElementsByTagName("td")[0].appendChild(svg);
+            svg = createCircleSvg("AccZY", "Z", "Y");
+            document.getElementById("acc").getElementsByTagName("td")[0].appendChild(svg);
         }
-
+        
+        function DummyData() {
+            this.hold = 0;
+            this.lStickX = 0;
+            this.lStickY = 0;
+            this.rStickX = 0;
+            this.rStickY = 0;
+            this.gyroX = 0;
+            this.gyroY = 0;
+            this.gyroZ = 0;
+            this.angleX = 0;
+            this.angleY = 0;
+            this.angleZ = 0;
+            this.accX = 0;
+            this.accY = 0;
+            this.accZ = 0;
+            this.dirXx = 1.0;
+            this.dirXy = 0.0;
+            this.dirXz = 0.0;
+            this.dirYx = 0.0;
+            this.dirYy = 1.0;
+            this.dirYz = 0.0;
+            this.dirZx = 0.0;
+            this.dirZy = 0.0;
+            this.dirZz = 1.0;
+            this.tpTouch = 0;
+            this.tpValidity = 0;
+            this.contentX = 0;
+            this.contentY = 0;
+        }
+        
+        function updateButtons(state) {
+            var elms = document.getElementById("Buttons").getElementsByTagName("td");
+            var mask = 0x80000000;
+            for(var i = 0; i < elms.length; i += 2, mask = (mask >>> 1)) {
+                var e = elms[i+1];
+                var isHeld = (state.hold & 0x7f86fffc & mask) ? 1 : 0;
+                e.innerHTML = (isHeld ? "1" : "0");
+            }
+        }
+        
+        function updateGyro(state, distance) {
+            var values = [state.gyroX, state.gyroY, state.gyroZ];
+            var keys = ["gyroX", "gyroY", "gyroZ"];
+            
+            for(var idx in keys) {
+                var svgElem = document.getElementById(keys[idx]);
+                var valElem = svgElem.getElementById("value");
+                valElem.setAttribute("y2", distance * values[idx]);
+                var txtElem = svgElem.getElementById("valueText");
+                txtElem.textContent = values[idx].toFixed(4);
+            }
+        }
+        
+        function updateAngle(state, distance) {
+            var values = [state.angleX, state.angleY, state.angleZ];
+            var keys = ["angleX", "angleY", "angleZ"];
+            
+            for(var idx in keys) {
+                var svgElem = document.getElementById(keys[idx]);
+                var valElem = svgElem.getElementById("value");
+                valElem.setAttribute("x2", distance * -Math.sin(values[idx] * 2 * Math.PI));
+                valElem.setAttribute("y2", distance * Math.cos(values[idx] * 2 * Math.PI));
+                var txtElem = svgElem.getElementById("valueText");
+                txtElem.textContent = values[idx].toFixed(4);
+            }
+        }
+        
         function update() {
-            // Check for Wii U gamepad data
-            if (window.wiiu && window.wiiu.gamepad) {
-                const state = window.wiiu.gamepad.update();
-                if (state && state.isEnabled && state.isDataValid) {
-                    document.getElementById("warning").style.display = "none";
-                    // Update UI with real data here
-                    return;
+            var DISTANCE = 32;
+            var state;
+            
+            if(window.wiiu) {
+                state = window.wiiu.gamepad.update();
+                if(!state.isEnabled || !state.isDataValid) {
+                    state = null;
                 }
             }
-            // If we get here, we're not on a Wii U or data is invalid
-            document.getElementById("warning").style.display = "block";
+            
+            if(!state) {
+                state = new DummyData();
+                var messageElm = document.getElementById("warning");
+                messageElm.innerHTML = "Either the Wii U Internet Browser is not being used, or the values from the Wii U GamePad could not properly be obtained.";
+            }
+            
+            updateButtons(state);
+            updateGyro(state, DISTANCE);
+            updateAngle(state, DISTANCE);
+            
+            // Update accelerometer
+            var svgElem = document.getElementById("AccXY");
+            var valElem = svgElem.getElementById("value");
+            valElem.setAttribute("x2", DISTANCE * state.accX);
+            valElem.setAttribute("y2", DISTANCE * -state.accY);
+            
+            svgElem = document.getElementById("AccZY");
+            valElem = svgElem.getElementById("value");
+            valElem.setAttribute("x2", DISTANCE * state.accZ);
+            valElem.setAttribute("y2", DISTANCE * -state.accY);
+            
+            // Update sticks
+            svgElem = document.getElementById("lStick");
+            valElem = svgElem.getElementById("value");
+            valElem.setAttribute("x2", DISTANCE * state.lStickX);
+            valElem.setAttribute("y2", DISTANCE * -state.lStickY);
+            
+            svgElem = document.getElementById("rStick");
+            valElem = svgElem.getElementById("value");
+            valElem.setAttribute("x2", DISTANCE * state.rStickX);
+            valElem.setAttribute("y2", DISTANCE * -state.rStickY);
+            
+            // Update touch
+            var txtItem = document.getElementById("touchpanel").getElementsByTagName("td")[0];
+            if(state.tpTouch == 1 && state.tpValidity == 0) {
+                txtItem.innerHTML = "(" + state.contentX + ", " + state.contentY + ")";
+            } else {
+                txtItem.innerHTML = "No touch detected.";
+            }
+            
+            // Update direction vectors
+            var vx = [state.dirXx, state.dirXy, state.dirXz];
+            var vy = [-state.dirYx, -state.dirYy, -state.dirYz];
+            var vz = [state.dirZx, state.dirZy, state.dirZz];
+            
+            var svgElmFront = document.getElementById("directionFront");
+            var lineElms = svgElmFront.getElementsByTagName("line");
+            lineElms[0].setAttribute("x2", 64 * vx[0]);
+            lineElms[0].setAttribute("y2", 64 * vx[1]);
+            lineElms[1].setAttribute("x2", 64 * vy[0]);
+            lineElms[1].setAttribute("y2", 64 * vy[1]);
+            lineElms[2].setAttribute("x2", 64 * vz[0]);
+            lineElms[2].setAttribute("y2", 64 * vz[1]);
+            
+            var svgElmTop = document.getElementById("directionTop");
+            lineElms = svgElmTop.getElementsByTagName("line");
+            lineElms[0].setAttribute("x2", 64 * vx[0]);
+            lineElms[0].setAttribute("y2", 64 * vx[2]);
+            lineElms[1].setAttribute("x2", 64 * vy[0]);
+            lineElms[1].setAttribute("y2", 64 * vy[2]);
+            lineElms[2].setAttribute("x2", 64 * vz[0]);
+            lineElms[2].setAttribute("y2", 64 * vz[2]);
         }
-
-        // Initialize and start update loop
+        
         init();
         setInterval(update, 20);
     </script>
